@@ -54,17 +54,6 @@ bench --site your-site.local install-app frappe_messenger
    - Choose platform (Facebook/Instagram)
    - Send text, images, or templates
 
-3. **Message Templates**
-   - Create and manage message templates
-   - Use templates for quick responses
-   - Customize templates with variables
-
-### Permissions
-
-The app includes the following permission levels:
-- Messenger User
-- Messenger Manager
-- Messenger Administrator
 
 ### License
 
