@@ -1,0 +1,65 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-04-27 22:22:20.430951",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "template",
+  "meta_data",
+  "creation",
+  "modified"
+ ],
+ "fields": [
+  {
+   "fieldname": "template",
+   "fieldtype": "Data",
+   "label": "Template",
+   "read_only": 1
+  },
+  {
+   "fieldname": "meta_data",
+   "fieldtype": "Code",
+   "label": "Meta Data",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "creation",
+   "fieldtype": "Datetime",
+   "label": "Creation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "modified",
+   "fieldtype": "Datetime",
+   "label": "Modified",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-05-06 12:41:39.375667",
+ "modified_by": "Administrator",
+ "module": "Frappe Messenger",
+ "name": "Messenger Notification Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+} 

@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{username}-{user_id}",
+ "creation": "2025-04-28 10:32:24.101868",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "user_id",
+  "username",
+  "platform"
+ ],
+ "fields": [
+  {
+   "fieldname": "user_id",
+   "fieldtype": "Data",
+   "label": "User ID"
+  },
+  {
+   "fieldname": "username",
+   "fieldtype": "Data",
+   "label": "Username"
+  },
+  {
+   "fieldname": "platform",
+   "fieldtype": "Select",
+   "label": "Platform",
+   "options": "Messenger\nInstagram"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-05-03 01:19:00.265080",
+ "modified_by": "Administrator",
+ "module": "Frappe Messenger",
+ "name": "Messenger User",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "username",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "username"
+}

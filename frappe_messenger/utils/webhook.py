@@ -1,0 +1,379 @@
+import frappe
+import json
+import requests
+import time
+from werkzeug.wrappers import Response
+import frappe.utils
+from pytz import timezone, UTC
+import pytz
+from dateutil import parser	
+from frappe.utils.file_manager import save_url
+
+@frappe.whitelist(allow_guest=True)
+def messenger_webhook():
+	if frappe.request.method == "GET":
+		return verify_webhook_token()
+	return process_incoming_messages()
+
+def verify_webhook_token():
+	hub_challenge = frappe.form_dict.get("hub.challenge")
+	webhook_verify_token = frappe.db.get_single_value("Messenger Settings", "webhook_verify_token")
+	if frappe.form_dict.get("hub.verify_token") != webhook_verify_token:
+		frappe.throw("Verify token does not match")
+	
+	return Response(hub_challenge, status=200)
+
+def process_incoming_messages():
+    data = frappe.local.form_dict
+    if not data:
+        data = json.loads(frappe.request.data)
+    print("DATA From WEbhook ", data)
+    frappe.get_doc({
+		"doctype": "Messenger Notification Log",
+		"template": "Webhook",
+		"meta_data": json.dumps(data)
+	}).insert(ignore_permissions=True)
+    # frappe.log_error("DATA From WEbhook ", data)
+    entry = data.get("entry",[])
+    for page_entry in entry:
+        print("PAGE ENTRY ",page_entry)
+        handle_incoming_messenger_message(page_entry)
+
+
+def handle_incoming_messenger_message(entry):
+    for messaging_event in entry.get("messaging", []):
+        try:
+            # Ignore outgoing messages (from the page itself)
+            if messaging_event["sender"]["id"] == entry.get("id"):
+                continue  
+
+            sender_id = messaging_event["sender"]["id"]
+            recipient_id = messaging_event["recipient"]["id"]
+            timestamp = frappe.utils.now_datetime()
+            message = messaging_event.get("message")
+            if not message:
+                continue
+
+            try:
+                conversation = get_or_create_conversation(sender_id)
+            except Exception as e:
+                frappe.log_error("Error in get_or_create_conversation", frappe.get_traceback())
+                continue
+
+            content_type = "text"
+            message_text = ""
+            file_url = None
+
+            if "text" in message:
+                message_text = message.get("text")
+                content_type = "text"
+
+            elif "attachments" in message:
+                try:
+                    attachment = message["attachments"][0]
+                    content_type = attachment.get("type")
+                    file_url = attachment.get("payload", {}).get("url")
+                    message_text = f"{content_type.capitalize()} message"
+                except Exception as e:
+                    frappe.log_error("Error processing attachment", frappe.get_traceback())
+                    continue
+
+            try:
+                frappe.db.set_value("Messenger Conversation", conversation, "last_message", message_text)
+                frappe.db.set_value("Messenger Conversation", conversation, "last_message_time", timestamp)
+            except Exception as e:
+                frappe.log_error("Error setting last message/time", frappe.get_traceback())
+
+            try:
+                doc = frappe.get_doc({
+                    "doctype": "Messenger Message",
+                    "message_direction": "Incoming",
+                    "sender_id": sender_id,
+                    "recipient_id": recipient_id,
+                    "timestamp": timestamp,
+                    "message_id": message.get("mid"),
+                    "message": message_text,
+                    "content_type": content_type,
+                    "conversation": conversation,
+                    "is_read": 0
+                })
+                try:
+                    doc.insert(ignore_permissions=True)
+                except Exception as e:
+                    frappe.log_error("Error inserting Messenger Message", frappe.get_traceback())
+                    return
+
+                if file_url and content_type in ["image", "video", "audio", "file", "document"]:
+                    if content_type == "file":
+                        content_type = "document"
+                    try:
+                        # saved_file = save_url(file_url, f"{content_type}_{doc.message_id}", doc.doctype, doc.name)
+                        saved_file = save_url(
+                            file_url,
+                            f"{content_type}_{doc.message_id}",
+                            doc.doctype,
+                            doc.name,
+                            folder="Home/Attachments",   # Or any other folder you prefer
+                            is_private=0                 # Set to 1 if the file should be private
+                        )
+                        doc.attach = saved_file.file_url
+                        doc.save(ignore_permissions=True)
+                    except Exception as e:
+                        frappe.log_error("Error saving attachment file", frappe.get_traceback())
+
+                # doc.insert(ignore_permissions=True)
+
+            except Exception as e:
+                frappe.log_error("Error inserting Messenger Message", frappe.get_traceback())
+
+        except Exception as e:
+            frappe.log_error("Unexpected error in handle_incoming_messenger_message", frappe.get_traceback())
+
+def get_or_create_conversation(sender_id):
+    # Dummy conversation logic – replace with your actual logic
+    conversation = frappe.db.get_value("Messenger Conversation", {"sender_id": sender_id})
+    if not conversation:
+        conversation_doc = frappe.get_doc({
+            "doctype": "Messenger Conversation",
+            "sender_id": sender_id,
+            "status": "Open"
+        })
+        conversation_doc.insert(ignore_permissions=True)
+        return conversation_doc.name
+    return conversation
+    
+
+# @frappe.whitelist(allow_guest=True)
+# def fetch_all_messages():
+# 	settings = frappe.get_single("Messenger Settings")
+# 	print("Hii worked ",settings.url)
+	
+
+# 	if not settings.enabled:
+# 		return
+# 	url = f"{settings.url}/{settings.version}/{settings.page_id}/conversations"
+# 	token = settings.get_password("access_token")
+# 	params = {
+# 		"access_token": token,
+# 		"fields": "messages{message,from,to,created_time,id}",
+# 		"platform":"messenger"
+# 	}
+# 	response = requests.get(url, params=params)
+# 	if response.status_code != 200:
+# 		frappe.log_error(response.text, "Messenger Fetch Error")
+# 		return
+# 	data = response.json()
+# 	conversations = data.get('data', [])
+# 	for convo in conversations:
+# 		convo_id = convo['id']
+# 		messages = convo.get('messages', {}).get('data', [])
+# 		print("messages[-1][created_time]",messages[-1]["created_time"])
+# 		created_time = parser.parse(messages[0]["created_time"]).replace(tzinfo=None)
+# 		print("Created TIME = > ",created_time )
+
+# 		existing_convo = frappe.db.exists("Messenger Conversation", {"conversation_id": convo_id})
+# 		if existing_convo:
+# 			conversation_doc = frappe.get_doc("Messenger Conversation", existing_convo)
+# 			frappe.db.set_value("Messenger Conversation", existing_convo, "last_message", messages[0]["message"])
+# 		else:	
+# 			conversation_doc = frappe.get_doc({
+# 				"doctype": "Messenger Conversation",
+# 				"conversation_id":convo_id,
+# 				"platform": "Messenger",
+# 				"sender_id": messages[-1]["from"]["id"],
+# 				"last_message": messages[0]["message"],
+# 				"last_message_time": created_time,
+# 				"status": "Open"
+# 			})
+# 			conversation_doc.insert(ignore_permissions=True)
+
+# 		for message in messages:
+# 			message_id = message.get('id')
+			
+# 			if frappe.db.exists("Messenger Message", {"message_id": message_id}):
+# 				continue
+
+# 			message_text = message.get("message", "")
+# 			from_id = message.get('from', {}).get('id')
+# 			to_data = message.get('to', {}).get('data', [])
+# 			created_time =parser.parse(message.get('created_time')).replace(tzinfo=None)
+			
+# 			frappe.get_doc({
+# 				"doctype": "Messenger Message",
+# 				"message_direction":"Incoming" if from_id != settings.page_id else "Outgoing",
+# 				"conversation": conversation_doc.name,
+# 				"sender_id": from_id,
+# 				"message": message_text,
+# 				"timestamp": created_time,
+# 				"message_id": message_id
+# 			}).insert(ignore_permissions=True)
+# 			from_user = message.get('from', {})
+# 			if from_user:
+# 				create_or_update_messenger_user(
+#                     user_id=from_user.get('id'),
+#                     user_name=from_user.get('name'),
+#                     platform="Messenger"
+#                 )
+
+
+def create_or_update_messenger_user(user_id, user_name, platform):
+    if not user_id:
+        return
+
+    if frappe.db.exists("Messenger User", {"user_id": user_id, "platform": platform}):
+        # Already exists, maybe update username if changed
+        user_doc = frappe.get_doc("Messenger User", {"user_id": user_id, "platform": platform})
+        if user_doc.username != user_name:
+            user_doc.username = user_name
+            user_doc.save(ignore_permissions=True)
+    else:
+        # Create new
+        frappe.get_doc({
+            "doctype": "Messenger User",
+            "user_id": user_id,
+            "username": user_name,
+            "platform": platform
+        }).insert(ignore_permissions=True)
+
+
+
+def fetch_messages_for_conversation(convo_id, token, version, local_tz, platform, page_id, conversation_doc):
+    url = f"https://graph.facebook.com/{version}/{convo_id}/messages"
+    params = {
+        "access_token": token,
+        "fields": "message,from,to,created_time,id",
+        "limit": 100
+    }
+    latest_created_time = None
+    latest_message = ""
+
+    while url:
+        response = requests.get(url, params=params).json()
+        for message in response.get("data", []):
+            message_id = message.get('id')
+            if frappe.db.exists("Messenger Message", {"message_id": message_id}):
+                continue
+
+            message_text = message.get("message", "")
+            from_id = message.get("from", {}).get("id")
+            from_username = message.get("from", {}).get("name") if platform == "messenger" else message.get("from", {}).get("username")
+            created_time_utc = parser.parse(message["created_time"])
+            created_time = created_time_utc.astimezone(local_tz).replace(tzinfo=None)
+            to_id = message.get("to", {}).get("id")
+
+            direction = "Incoming" if from_id != page_id else "Outgoing"
+
+            frappe.get_doc({
+                "doctype": "Messenger Message",
+                "message_direction": direction,
+                "conversation": conversation_doc.name,
+                "sender_id": from_id,
+                "recipient_id": to_id,
+                "message": message_text,
+                "timestamp": created_time,
+                "message_id": message_id
+            }).insert(ignore_permissions=True)
+
+            if from_id:
+                create_or_update_messenger_user(
+                    user_id=from_id,
+                    user_name=from_username,
+                    platform=platform.capitalize()
+                )
+            if not latest_created_time or created_time > latest_created_time:
+                latest_created_time = created_time
+                latest_message = message_text
+
+        url = response.get("paging", {}).get("next")
+        params = {}  # Use full URL from 'next'
+    if latest_created_time:
+        conversation_doc.db_set("last_message", latest_message, update_modified=False)
+        conversation_doc.db_set("last_message_time", latest_created_time, update_modified=False)
+
+
+@frappe.whitelist(allow_guest=True)
+def fetch_all_messages():
+    settings = frappe.get_single("Messenger Settings")
+    if not settings.enabled:
+        return
+
+    token = settings.get_password("access_token")
+    timezone = frappe.db.get_single_value("System Settings", "time_zone")
+    local_tz = pytz.timezone(timezone)
+
+    for platform in ["messenger", "instagram"]:
+        page_id = settings.page_id if platform == "messenger" else settings.instagram_page_id
+        url = f"{settings.url}/{settings.version}/{ settings.page_id}/conversations"
+        params = {
+            "access_token": token,
+            "fields": "participants{name,id,profile_pic}",  # Don't fetch nested messages here
+            "platform": platform,
+            "limit": 100
+        }
+
+        response = requests.get(url, params=params)
+        frappe.log_error(f"Fetch All Messages {platform}",f"Fetch All Messages {response} from {platform}")
+        if response.status_code != 200:
+            frappe.log_error(f"{platform.capitalize()} Fetch Error ok", response.text)
+            continue
+
+        data = response.json()
+        conversations = data.get('data', [])
+        for convo in conversations:
+            convo_id = convo.get('id')
+            participants = convo.get("participants", {}).get("data", [])
+
+            existing_convo = frappe.db.exists("Messenger Conversation", {"conversation_id": convo_id})
+            if existing_convo:
+                conversation_doc = frappe.get_doc("Messenger Conversation", existing_convo)
+            else:
+                sender_id = participants[0].get("id") if platform == "messenger" else participants[1].get("id")
+                conversation_doc = frappe.get_doc({
+                    "doctype": "Messenger Conversation",
+                    "conversation_id": convo_id,
+                    "platform": platform.capitalize(),
+                    "sender_id": sender_id,
+                    "status": "Open"
+                })
+                conversation_doc.insert(ignore_permissions=True)
+
+            # Fetch all messages for this conversation
+            fetch_messages_for_conversation(convo_id, token, settings.version, local_tz, platform, page_id, conversation_doc)
+
+
+
+def send_message_on_creation(doc,method):
+	print("Sending Message on Creation",doc)
+	frappe.log_error("Sending Message on Creation",f"Sending Message on Creation {doc}")
+	if doc.message_direction != "Outgoing":
+		return
+	send_message(doc.recipient_id,doc.message )
+
+
+
+@frappe.whitelist()
+def send_message(recipient_id,message):
+	# recipient_id = "9780239182022706"
+	# message = "HIIIII test"
+	print("Sending Message",f"Sending Message to {recipient_id} with message {message}")
+	frappe.log_error("Sending Message",f"Sending Message to {recipient_id} with message {message}")
+	settings = frappe.get_single("Messenger Settings")
+	url = f"{settings.url}/{settings.version}/me/messages"
+	token = settings.get_password("access_token")
+	print("token", token)
+	params = {
+        "access_token": token
+    }
+	payload = {
+        "recipient": {
+            "id": recipient_id
+        },
+        "message": {
+            "text": message
+        }
+    }
+	response = requests.post(url, params=params, json=payload)
+	print("RESPONSE",response)
+	if response.status_code != 200:
+		frappe.log_error("Messenger Send Message Error",response.text)
+		frappe.throw("Failed to send message")

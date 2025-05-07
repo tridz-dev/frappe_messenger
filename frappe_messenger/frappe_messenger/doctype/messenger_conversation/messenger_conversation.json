@@ -1,0 +1,82 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-04-27 22:07:19.648097",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "platform",
+  "participants",
+  "conversation_id",
+  "sender_id",
+  "last_message",
+  "last_message_time",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "platform",
+   "fieldtype": "Select",
+   "label": "Platform",
+   "options": "Messenger\nInstagram"
+  },
+  {
+   "fieldname": "sender_id",
+   "fieldtype": "Data",
+   "label": "Sender ID"
+  },
+  {
+   "fieldname": "last_message",
+   "fieldtype": "Small Text",
+   "label": "Last Message"
+  },
+  {
+   "fieldname": "last_message_time",
+   "fieldtype": "Datetime",
+   "label": "Last Message Time"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Open"
+  },
+  {
+   "fieldname": "conversation_id",
+   "fieldtype": "Data",
+   "label": "Conversation ID"
+  },
+  {
+   "fieldname": "participants",
+   "fieldtype": "Table MultiSelect",
+   "label": "Participants",
+   "options": "Messenger Participants"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-04-28 10:43:51.127357",
+ "modified_by": "Administrator",
+ "module": "Frappe Messenger",
+ "name": "Messenger Conversation",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,85 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-04-27 21:54:44.365785",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "access_token",
+  "url",
+  "version",
+  "page_id",
+  "instagram_page_id",
+  "app_id",
+  "webhook_verify_token"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "access_token",
+   "fieldtype": "Password",
+   "label": "Access Token"
+  },
+  {
+   "fieldname": "url",
+   "fieldtype": "Data",
+   "label": "URL"
+  },
+  {
+   "fieldname": "version",
+   "fieldtype": "Data",
+   "label": "Version"
+  },
+  {
+   "fieldname": "page_id",
+   "fieldtype": "Data",
+   "label": "Page ID"
+  },
+  {
+   "fieldname": "app_id",
+   "fieldtype": "Data",
+   "label": "App ID"
+  },
+  {
+   "fieldname": "webhook_verify_token",
+   "fieldtype": "Data",
+   "label": "Webhook Verify Token"
+  },
+  {
+   "fieldname": "instagram_page_id",
+   "fieldtype": "Data",
+   "label": "Instagram Page ID"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-05-02 16:07:34.054024",
+ "modified_by": "Administrator",
+ "module": "Frappe Messenger",
+ "name": "Messenger Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
