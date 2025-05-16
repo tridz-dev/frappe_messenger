@@ -7,7 +7,10 @@ Integrate and manage Facebook Messenger and Instagram messages from Frappe.
 - Facebook Messenger Integration
 - Instagram Messages Integration
 - Message history tracking
-
+- Platform-specific icons and titles
+  - Facebook Messenger: Messenger icon with "Facebook Messenger" title
+  - Instagram: Instagram icon with "Instagram DM" title
+  - Other platforms: Chat icon with "[Platform Name] DM" title
 
 ### Installation
 
@@ -67,5 +70,9 @@ The app includes the following permission levels:
 - Messenger Administrator
 
 ### License
+
+MIT
+
+### About
 
 Frappe Messenger is developed and maintained by Tridz Technologies Pvt. Ltd.

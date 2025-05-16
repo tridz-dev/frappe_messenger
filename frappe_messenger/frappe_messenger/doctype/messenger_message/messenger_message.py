@@ -105,7 +105,7 @@ def upload_messenger_large_file(file_url, file_type, token, settings):
 				})
 			}
 
-			upload_url = f"https://graph.facebook.com/{settings.version}/me/message_attachments"
+			upload_url = f"{settings.url}/{settings.version}/me/message_attachments"
 			response = requests.post(upload_url, params=params, data=data, files=files)
 
 			if response.status_code != 200:
@@ -119,6 +119,12 @@ def upload_messenger_large_file(file_url, file_type, token, settings):
 
 @frappe.whitelist()
 def send_message(self,recipient_id,message):
+	platform = frappe.db.get_value("Messenger Conversation",self.conversation,"platform")
+	print("PLATFORM form send.. ", platform)
+	from_meta = frappe.db.get_value("Messenger Platform",platform,"from_meta")
+	print("from meta",from_meta)
+	if not from_meta:
+		return
 	frappe.log_error("Sending Message",f"Sending Message to {recipient_id} with message {message} // {self.content_type}")
 	settings = frappe.get_single("Messenger Settings")
 	url = f"{settings.url}/{settings.version}/me/messages"

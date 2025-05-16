@@ -1,48 +1,36 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{username}-{user_id}",
- "creation": "2025-04-28 10:32:24.101868",
+ "autoname": "field:platform",
+ "creation": "2025-05-07 18:44:16.328113",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "user_id",
-  "username",
   "platform",
-  "profile"
+  "from_meta"
  ],
  "fields": [
   {
-   "fieldname": "user_id",
-   "fieldtype": "Data",
-   "label": "User ID"
-  },
-  {
-   "fieldname": "username",
-   "fieldtype": "Data",
-   "label": "Username"
-  },
-  {
    "fieldname": "platform",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Platform",
-   "options": "Messenger Platform"
+   "unique": 1
   },
   {
-   "fieldname": "profile",
-   "fieldtype": "Attach Image",
-   "label": "Profile"
+   "default": "1",
+   "fieldname": "from_meta",
+   "fieldtype": "Check",
+   "label": "From Meta"
   }
  ],
  "grid_page_length": 50,
- "image_field": "profile",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-05-08 02:00:17.283524",
+ "modified": "2025-05-07 18:51:45.198160",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
- "name": "Messenger User",
- "naming_rule": "Expression",
+ "name": "Messenger Platform",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -59,9 +47,7 @@
   }
  ],
  "row_format": "Dynamic",
- "search_fields": "username",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
- "title_field": "username"
+ "states": []
 }

@@ -35,12 +35,13 @@ def process_incoming_messages():
 	}).insert(ignore_permissions=True)
     # frappe.log_error("DATA From WEbhook ", data)
     entry = data.get("entry",[])
+    object = data.get("object")
+    platform = "messenger" if object == "page" else "instagram"
     for page_entry in entry:
-        print("PAGE ENTRY ",page_entry)
-        handle_incoming_messenger_message(page_entry)
+        handle_incoming_messenger_message(page_entry,platform)
 
 
-def handle_incoming_messenger_message(entry):
+def handle_incoming_messenger_message(entry,platform):
     for messaging_event in entry.get("messaging", []):
         try:
             # Ignore outgoing messages (from the page itself)
@@ -51,11 +52,13 @@ def handle_incoming_messenger_message(entry):
             recipient_id = messaging_event["recipient"]["id"]
             timestamp = frappe.utils.now_datetime()
             message = messaging_event.get("message")
+            user = create_or_update_messenger_user(sender_id,platform)
+            # frappe.log_error("User",user)
             if not message:
                 continue
 
             try:
-                conversation = get_or_create_conversation(sender_id)
+                conversation = get_or_create_conversation(sender_id,platform)
             except Exception as e:
                 frappe.log_error("Error in get_or_create_conversation", frappe.get_traceback())
                 continue
@@ -89,6 +92,7 @@ def handle_incoming_messenger_message(entry):
                     "doctype": "Messenger Message",
                     "message_direction": "Incoming",
                     "sender_id": sender_id,
+                    "sender_user": user,
                     "recipient_id": recipient_id,
                     "timestamp": timestamp,
                     "message_id": message.get("mid"),
@@ -129,14 +133,15 @@ def handle_incoming_messenger_message(entry):
         except Exception as e:
             frappe.log_error("Unexpected error in handle_incoming_messenger_message", frappe.get_traceback())
 
-def get_or_create_conversation(sender_id):
+def get_or_create_conversation(sender_id,platform):
     # Dummy conversation logic – replace with your actual logic
     conversation = frappe.db.get_value("Messenger Conversation", {"sender_id": sender_id})
     if not conversation:
         conversation_doc = frappe.get_doc({
             "doctype": "Messenger Conversation",
             "sender_id": sender_id,
-            "status": "Open"
+            "status": "Open",
+            "platform": platform
         })
         conversation_doc.insert(ignore_permissions=True)
         return conversation_doc.name
@@ -215,25 +220,93 @@ def get_or_create_conversation(sender_id):
 #                     platform="Messenger"
 #                 )
 
+# //////////////////////////
+# def create_or_update_messenger_user(user_id, user_name, platform):
+#     if not user_id:
+#         return
 
-def create_or_update_messenger_user(user_id, user_name, platform):
+#     if frappe.db.exists("Messenger User", {"user_id": user_id, "platform": platform}):
+#         # Already exists, maybe update username if changed
+#         user_doc = frappe.get_doc("Messenger User", {"user_id": user_id, "platform": platform})
+#         if user_doc.username != user_name:
+#             user_doc.username = user_name
+#             user_doc.save(ignore_permissions=True)
+#             return user_doc.name
+#     else:
+#         # Create new
+#         user_doc=frappe.get_doc({
+#             "doctype": "Messenger User",
+#             "user_id": user_id,
+#             "username": user_name,
+#             "platform": platform
+#         }).insert(ignore_permissions=True)
+#         return user_doc.name
+
+def create_or_update_messenger_user(user_id, platform=None, user_name=None):
     if not user_id:
         return
 
+    # Get Messenger Settings
+    settings = frappe.get_single("Messenger Settings")
+    token = settings.get_password("access_token")
+    frappe.log_error("Platform", platform)
+
+    # Choose fields based on platform
+    if platform == "instagram":
+        fields = "name,profile_pic"
+    else:  # Default to Messenger
+        fields = "first_name,last_name,profile_pic"
+
+    url = f"{settings.url}/{settings.version}/{user_id}?fields={fields}&access_token={token}"
+
+    # Fetch user details from Meta
+    try:
+        response = requests.get(url)
+        frappe.log_error("Response NWWw ", response)
+        if response.status_code == 200:
+            data = response.json()
+            if platform == "instagram":
+                user_name = data.get("name", "") or user_name
+            else:
+                fetched_name = f"{data.get('first_name', '')} {data.get('last_name', '')}".strip()
+                user_name = fetched_name or user_name
+
+            profile_pic = data.get("profile_pic", "")
+        else:
+            frappe.log_error("Messenger User Sync", f"Failed to fetch user info: {response.text}")
+            profile_pic = ""
+    except Exception:
+        frappe.log_error("Messenger User API Error", frappe.get_traceback())
+        profile_pic = ""
+
+    # Check if user exists
     if frappe.db.exists("Messenger User", {"user_id": user_id, "platform": platform}):
-        # Already exists, maybe update username if changed
         user_doc = frappe.get_doc("Messenger User", {"user_id": user_id, "platform": platform})
+        frappe.log_error("User Doc", user_doc)
+        updated = False
+
         if user_doc.username != user_name:
             user_doc.username = user_name
+            updated = True
+
+        if profile_pic and not user_doc.profile:
+            user_doc.profile = profile_pic
+            updated = True
+
+        if updated:
             user_doc.save(ignore_permissions=True)
+
+        return user_doc.name
     else:
         # Create new
-        frappe.get_doc({
+        user_doc = frappe.get_doc({
             "doctype": "Messenger User",
             "user_id": user_id,
             "username": user_name,
-            "platform": platform
+            "platform": platform,
+            "profile": profile_pic
         }).insert(ignore_permissions=True)
+        return user_doc.name
 
 
 
