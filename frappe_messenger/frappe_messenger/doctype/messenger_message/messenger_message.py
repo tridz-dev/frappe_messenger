@@ -17,7 +17,7 @@ class MessengerMessage(Document):
 	def send_message_on_creation(self):
 		# print("Sending Message on Creation",self)
 		# frappe.log_error("Sending Message on Creation",f"Sending Message on Creation {self}")
-		if self.message_direction != "Outgoing":
+		if self.message_direction != "Outgoing" or self.message_id:
 			return
 		send_message(self,self.recipient_id,self.message )
 
