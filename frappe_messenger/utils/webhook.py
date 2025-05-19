@@ -351,7 +351,7 @@ def fetch_messages_for_conversation(convo_id, token, version, local_tz, platform
                 create_or_update_messenger_user(
                     user_id=from_id,
                     user_name=from_username,
-                    platform=platform.capitalize()
+                    platform=platform   
                 )
             if not latest_created_time or created_time > latest_created_time:
                 latest_created_time = created_time
