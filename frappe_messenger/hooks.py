@@ -83,7 +83,7 @@ doctype_list_js = {"Messenger Message" : "public/js/messenger_message_list.js"}
 # ------------
 
 # before_install = "frappe_messenger.install.before_install"
-# after_install = "frappe_messenger.install.after_install"
+after_install = "frappe_messenger.install.after_install"
 
 # Uninstallation
 # ------------
