@@ -12,7 +12,10 @@
   "page_id",
   "instagram_page_id",
   "app_id",
-  "webhook_verify_token"
+  "webhook_verify_token",
+  "section_break_yqay",
+  "restrict_by_assignment",
+  "unrestricted_roles"
  ],
  "fields": [
   {
@@ -55,13 +58,30 @@
    "fieldname": "instagram_page_id",
    "fieldtype": "Data",
    "label": "Instagram Page ID"
+  },
+  {
+   "fieldname": "section_break_yqay",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "restrict_by_assignment",
+   "fieldtype": "Check",
+   "label": "Restrict Access by Assignment"
+  },
+  {
+   "depends_on": "eval:doc.restrict_by_assignment == 1",
+   "fieldname": "unrestricted_roles",
+   "fieldtype": "Table MultiSelect",
+   "label": "Roles with Full Access",
+   "options": "Messenger Access Role"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-05-02 16:07:34.054024",
+ "modified": "2025-05-26 15:14:18.505077",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Settings",

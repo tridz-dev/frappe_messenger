@@ -116,6 +116,9 @@ after_install = "frappe_messenger.install.after_install"
 # Permissions
 # -----------
 # Permissions evaluated in scripted ways
+permission_query_conditions = {
+	"Messenger Conversation": "frappe_messenger.frappe_messenger.doctype.messenger_message.messenger_message.get_permission_query_conditions",
+}
 
 # permission_query_conditions = {
 # 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",

@@ -257,3 +257,26 @@ def mark_messages_as_read(conversation):
 			'is_read': 0
 		}
 	)
+
+def get_permission_query_conditions(user):
+	if not user or user == "Administrator":
+		return ""
+	settings = frappe.get_cached_doc("Messenger Settings")
+
+	if not settings.restrict_by_assignment:
+		return ""
+	
+	user_roles = frappe.get_roles(user)
+	unrestricted_roles = [d.role for d in settings.unrestricted_roles]
+	
+	if any(role in user_roles for role in unrestricted_roles):
+		return ""
+		
+	return """(`tabMessenger Conversation`.name IN (
+				SELECT reference_name
+				FROM `tabToDo`
+				WHERE `reference_type` = 'Messenger Conversation'
+				AND `status` = 'Open' 
+				AND `allocated_to` = {user}
+			))
+			""".format(user=frappe.db.escape(user))
