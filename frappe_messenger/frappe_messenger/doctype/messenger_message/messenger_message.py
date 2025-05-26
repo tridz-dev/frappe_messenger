@@ -231,6 +231,23 @@ def mark_messages_as_read(conversation):
 	""", (conversation))
 	
 	frappe.db.commit()
+	platform = frappe.db.get_value("Messenger Conversation",conversation,"platform")
+	if platform == "Messenger":
+		settings = frappe.get_single("Messenger Settings")
+		url = f"{settings.url}/{settings.version}/me/messages"
+		token = settings.get_password("access_token")
+		# print("CONVERSATION .. ", conversation)
+		sender_id = frappe.db.get_value("Messenger Conversation",conversation,"sender_id")
+		params = {
+			"access_token": token
+		}
+		payload = {
+			"recipient": {
+				"id": sender_id
+			},
+			'sender_action': 'mark_seen'
+		}
+		response = requests.post(url, params=params, json=payload)
 	
 	# Return updated unread count for the conversation
 	return frappe.db.count('Messenger Message', 
