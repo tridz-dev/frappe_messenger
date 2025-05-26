@@ -48,6 +48,14 @@ def handle_incoming_messenger_message(entry,platform):
             if messaging_event["sender"]["id"] == entry.get("id"):
                 continue  
 
+            if "delivery" in messaging_event:
+                handle_message_delivery_event(messaging_event)
+                continue
+
+            if "read" in messaging_event:
+                handle_message_read_event(messaging_event,platform)
+                continue
+
             sender_id = messaging_event["sender"]["id"]
             recipient_id = messaging_event["recipient"]["id"]
             timestamp = frappe.utils.now_datetime()
@@ -132,6 +140,43 @@ def handle_incoming_messenger_message(entry,platform):
 
         except Exception as e:
             frappe.log_error("Unexpected error in handle_incoming_messenger_message", frappe.get_traceback())
+
+def handle_message_delivery_event(messaging_event):
+    sender_id = messaging_event["sender"]["id"]
+    delivery = messaging_event["delivery"]
+    mids = delivery.get("mids", [])
+    watermark = delivery.get("watermark")
+
+    for mid in mids:
+        try:
+            print("message delivery",mid)
+            message_name = frappe.db.get_value("Messenger Message", {"message_id": mid},"name")
+            message = frappe.get_doc("Messenger Message", message_name)
+            message.status = "Delivered"
+            message.save(ignore_permissions=True)
+
+        except Exception as e:
+            frappe.log_error("Error updating delivery status for message_id {}: {}".format(mid, str(e)))
+
+
+def handle_message_read_event(messaging_event,platform):
+    sender_id = messaging_event["sender"]["id"]
+    # watermark = messaging_event["read"]["watermark"]
+    conversation = get_or_create_conversation(sender_id,platform)
+
+    if not conversation:
+        frappe.log_error("Conversation not found for sender_id: {}".format(sender_id))
+        return
+
+    try:
+        message_list = frappe.db.get_list("Messenger Message", {"conversation": conversation, "message_direction": "Outgoing","status": ("!=", "Read")},ignore_permissions=True)
+        frappe.log_error("Message List",message_list)
+        for message in message_list:
+            message = frappe.get_doc("Messenger Message", message.name)
+            message.status = "Read"
+            message.save(ignore_permissions=True)
+    except Exception as e:
+        frappe.log_error("Error updating read status for messages in conversation: {}".format(conversation), str(e))
 
 def get_or_create_conversation(sender_id,platform):
     # Dummy conversation logic – replace with your actual logic
