@@ -139,7 +139,11 @@ permission_query_conditions = {
 # Document Events
 # ---------------
 # Hook on document methods and events
-
+doc_events = {
+	"WhatsApp Message": {
+		"on_update": "frappe_messenger.utils.whatsapp_to_messenger.get_whatsapp_message"
+	}
+}
 # doc_events = {
 # 	"Messenger Message ": {
 # 		"after_insert": "frappe_messenger.utils.webhook.send_message_on_creation"
@@ -242,4 +246,19 @@ permission_query_conditions = {
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
+
+fixtures = [
+    {
+        "doctype": "Custom Field",
+        "filters": [
+            [
+                "name",
+                "in",
+                {
+                    "WhatsApp Message-custom_message_from_messenger"
+                },
+            ]
+        ],
+    }
+]
 

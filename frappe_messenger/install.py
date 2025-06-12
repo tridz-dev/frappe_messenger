@@ -13,6 +13,14 @@ def add_default_platforms():
             "from_meta":1
         }
     }
+    
+    apps = frappe.get_single("Installed Applications").installed_applications
+    whatsapp_app = [app.app_name for app in apps if app.app_name == "frappe_whatsapp"]
+    
+    if whatsapp_app:
+        platforms["WhatsApp"] = {
+            "from_meta": 1
+        }
 
     for platform in platforms:
         if frappe.db.exists("Messenger Platform",platform):

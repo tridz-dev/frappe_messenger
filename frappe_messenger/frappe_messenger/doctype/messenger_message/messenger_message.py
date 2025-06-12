@@ -125,6 +125,10 @@ def send_message(self,recipient_id,message):
 	print("from meta",from_meta)
 	if not from_meta:
 		return
+	if platform == "WhatsApp":
+		whatsapp_msg = send_whatsapp_message(self)
+		frappe.db.set_value("Messenger Message", self.name, "message_id", whatsapp_msg.message_id)
+		return
 	frappe.log_error("Sending Message",f"Sending Message to {recipient_id} with message {message} // {self.content_type}")
 	settings = frappe.get_single("Messenger Settings")
 	url = f"{settings.url}/{settings.version}/me/messages"
@@ -280,3 +284,29 @@ def get_permission_query_conditions(user):
 				AND `allocated_to` = {user}
 			))
 			""".format(user=frappe.db.escape(user))
+
+
+def send_whatsapp_message(self):
+	try:
+		whatsapp_msg = frappe.new_doc("WhatsApp Message")
+		whatsapp_msg.update({
+            "to": self.recipient_id,
+            "message": self.message,
+            "content_type": self.content_type,
+            "custom_message_from_messenger": 1
+        })
+		whatsapp_msg.insert(ignore_permissions=True)
+
+		if self.conversation:
+				frappe.db.set_value("Messenger Conversation", self.conversation, {
+					"last_message": self.message,
+					"last_message_time": self.creation
+				})
+
+		return whatsapp_msg
+	except Exception as e:
+		frappe.log_error(
+            title="send_whatsapp_message Error",
+            message=frappe.get_traceback()
+        )
+		return None
