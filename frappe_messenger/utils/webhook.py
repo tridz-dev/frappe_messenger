@@ -182,11 +182,13 @@ def get_or_create_conversation(sender_id,platform):
     # Dummy conversation logic – replace with your actual logic
     conversation = frappe.db.get_value("Messenger Conversation", {"sender_id": sender_id})
     if not conversation:
+        sender = frappe.db.get_value("Messenger User",{"user_id": sender_id,"platform":platform})
         conversation_doc = frappe.get_doc({
             "doctype": "Messenger Conversation",
             "sender_id": sender_id,
             "status": "Open",
-            "platform": platform
+            "platform": platform,
+            "sender":sender
         })
         conversation_doc.insert(ignore_permissions=True)
         return conversation_doc.name

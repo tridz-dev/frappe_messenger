@@ -1,14 +1,16 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:MSG-CONV-{sender_name}-{#####}",
  "creation": "2025-04-27 22:07:19.648097",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "platform",
-  "participants",
   "conversation_id",
   "sender_id",
+  "sender",
+  "sender_name",
   "last_message",
   "last_message_time",
   "status"
@@ -47,19 +49,27 @@
    "label": "Conversation ID"
   },
   {
-   "fieldname": "participants",
-   "fieldtype": "Table MultiSelect",
-   "label": "Participants",
-   "options": "Messenger Participants"
+   "fieldname": "sender",
+   "fieldtype": "Link",
+   "label": "Sender",
+   "options": "Messenger User"
+  },
+  {
+   "fetch_from": "sender.username",
+   "fieldname": "sender_name",
+   "fieldtype": "Data",
+   "label": "Sender Name",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-05-07 19:00:54.068098",
+ "modified": "2025-06-13 17:37:44.757498",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Conversation",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
