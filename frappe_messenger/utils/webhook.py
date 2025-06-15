@@ -211,27 +211,42 @@ def get_or_create_conversation(sender_id,platform):
     })
     return conversation
     
-def get_or_create_new_lead(conversation,sender):
+def get_or_create_new_lead(conversation_name, sender_user_id):
+    user = frappe.db.get_value(
+        "Messenger User",
+        sender_user_id,
+        ["username", "platform", "user_id"],
+        as_dict=True
+    )
+
+    if not user:
+        frappe.log_error("user not found", f"User ({sender_user_id}) Not found while crearing lead")
+        return
+
     lead_exist = None
-    if conversation:
-        lead_exist = frappe.db.exists("CRM Lead",{"custom_messenger_conversation":conversation})
-    
-    if not lead_exist:
-        user_name = frappe.db.get_value("Messenger User",sender,"username")
-        platform = frappe.db.get_value("Messenger User",sender,"platform")
-        user_id = frappe.db.get_value("Messenger User",sender,"user_id")
-        lead = frappe.get_doc({
-            "doctype": "CRM Lead",
-            "first_name": user_name if user_name else f'lead from {platform}({user_id})',
-            "last_name":"",
-            "source": platform,
-            "custom_messenger_conversation":conversation,
-            "status": "New"
-        })
-        lead.insert(ignore_permissions=True)
-        frappe.db.commit()
-        return lead.name
-    return lead_exist
+    if user.platform == "WhatsApp":
+        lead_exist = frappe.db.exists("CRM Lead", {"mobile_no": user.user_id})
+    elif conversation_name:
+        lead_exist = frappe.db.exists("CRM Lead", {"custom_messenger_conversation": conversation_name})
+
+    if lead_exist:
+        return lead_exist
+
+
+    full_name = user.username or f"Lead from {user.platform} ({user.user_id})"
+    lead = frappe.get_doc({
+        "doctype": "CRM Lead",
+        "first_name": full_name,
+        "last_name": "",
+        "source": user.platform,
+        "mobile_no": user.user_id if user.platform == "WhatsApp" else "",
+        "custom_messenger_conversation": conversation_name,
+        "status": "New"
+    })
+    lead.insert(ignore_permissions=True)
+    frappe.db.commit()
+
+    return lead.name
 
 def get_messenger_user(sender_id, platform):
     return frappe.db.get_value("Messenger User", {"user_id": sender_id, "platform": platform})
