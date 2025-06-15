@@ -14,6 +14,7 @@
   "last_message",
   "last_message_time",
   "status",
+  "block_chat",
   "section_break_jrko",
   "reference_doctype",
   "column_break_awms",
@@ -84,12 +85,18 @@
    "fieldtype": "Dynamic Link",
    "label": "Reference Name",
    "options": "reference_doctype"
+  },
+  {
+   "default": "0",
+   "fieldname": "block_chat",
+   "fieldtype": "Check",
+   "label": "Block Chat"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-13 17:49:49.681474",
+ "modified": "2025-06-15 21:29:36.408889",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Conversation",
