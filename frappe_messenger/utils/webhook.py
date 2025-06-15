@@ -181,19 +181,71 @@ def handle_message_read_event(messaging_event,platform):
 def get_or_create_conversation(sender_id,platform):
     # Dummy conversation logic – replace with your actual logic
     conversation = frappe.db.get_value("Messenger Conversation", {"sender_id": sender_id})
+    
+    reference_doctype = frappe.db.get_value("Messenger Conversation", {"sender_id": sender_id},"reference_doctype")
+    reference_name = frappe.db.get_value("Messenger Conversation", {"sender_id": sender_id},"reference_name")
+    if not reference_name:
+        if get_cached_setting("auto_create_lead") == "1":
+            sender = get_messenger_user(sender_id, platform)
+            lead = get_or_create_new_lead(conversation,sender)
+            reference_doctype = "CRM Lead"
+            reference_name = lead
     if not conversation:
-        sender = frappe.db.get_value("Messenger User",{"user_id": sender_id,"platform":platform})
+        sender = get_messenger_user(sender_id, platform)
         conversation_doc = frappe.get_doc({
             "doctype": "Messenger Conversation",
             "sender_id": sender_id,
             "status": "Open",
             "platform": platform,
-            "sender":sender
+            "sender":sender,
+            "reference_doctype":reference_doctype,
+            "reference_name":reference_name
         })
         conversation_doc.insert(ignore_permissions=True)
+        if reference_doctype and reference_name:
+            frappe.db.set_value(reference_doctype, reference_name, "custom_messenger_conversation", conversation_doc.name)
         return conversation_doc.name
+    frappe.db.set_value("Messenger Conversation", conversation, {
+        "reference_doctype": reference_doctype,
+        "reference_name": reference_name
+    })
     return conversation
     
+def get_or_create_new_lead(conversation,sender):
+    lead_exist = None
+    if conversation:
+        lead_exist = frappe.db.exists("CRM Lead",{"custom_messenger_conversation":conversation})
+    
+    if not lead_exist:
+        user_name = frappe.db.get_value("Messenger User",sender,"username")
+        platform = frappe.db.get_value("Messenger User",sender,"platform")
+        user_id = frappe.db.get_value("Messenger User",sender,"user_id")
+        lead = frappe.get_doc({
+            "doctype": "CRM Lead",
+            "first_name": user_name if user_name else f'lead from {platform}({user_id})',
+            "last_name":"",
+            "source": platform,
+            "custom_messenger_conversation":conversation,
+            "status": "New"
+        })
+        lead.insert(ignore_permissions=True)
+        frappe.db.commit()
+        return lead.name
+    return lead_exist
+
+def get_messenger_user(sender_id, platform):
+    return frappe.db.get_value("Messenger User", {"user_id": sender_id, "platform": platform})
+
+
+def get_cached_setting(fieldname):
+    cached_settings = frappe.cache().get_value("messenger_settings_cache")
+    
+    if not cached_settings:
+        cached_settings = frappe.db.get_value("Messenger Settings", None, "*", as_dict=True)
+        frappe.cache().set_value("messenger_settings_cache", cached_settings)
+    
+    return cached_settings.get(fieldname)
+
 
 # @frappe.whitelist(allow_guest=True)
 # def fetch_all_messages():

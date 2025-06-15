@@ -15,7 +15,9 @@
   "webhook_verify_token",
   "section_break_yqay",
   "restrict_by_assignment",
-  "unrestricted_roles"
+  "unrestricted_roles",
+  "section_break_fwqq",
+  "auto_create_lead"
  ],
  "fields": [
   {
@@ -75,13 +77,24 @@
    "fieldtype": "Table MultiSelect",
    "label": "Roles with Full Access",
    "options": "Messenger Access Role"
+  },
+  {
+   "fieldname": "section_break_fwqq",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "description": "Auto-create lead on new conversation",
+   "fieldname": "auto_create_lead",
+   "fieldtype": "Check",
+   "label": "Auto Create Lead"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-05-26 15:14:18.505077",
+ "modified": "2025-06-13 18:10:43.516581",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Settings",

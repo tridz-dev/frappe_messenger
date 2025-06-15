@@ -13,7 +13,11 @@
   "sender_name",
   "last_message",
   "last_message_time",
-  "status"
+  "status",
+  "section_break_jrko",
+  "reference_doctype",
+  "column_break_awms",
+  "reference_name"
  ],
  "fields": [
   {
@@ -60,12 +64,32 @@
    "fieldtype": "Data",
    "label": "Sender Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_jrko",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "label": "Reference Doctype",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "column_break_awms",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Reference Name",
+   "options": "reference_doctype"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-13 17:37:44.757498",
+ "modified": "2025-06-13 17:49:49.681474",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Conversation",
