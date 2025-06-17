@@ -13,7 +13,19 @@ class MessengerMessage(Document):
 	def after_insert(self):
 		# pass
 		self.send_message_on_creation()
+		self.open_conversation()
 
+	def open_conversation(self):
+		if self.conversation:
+			conversation = frappe.get_doc("Messenger Conversation",self.conversation)
+			if conversation.status != "Open":
+				conversation.status = "Open"
+				conversation.save(ignore_permissions=True)
+			else:
+				return
+		else:
+			frappe.log_error("Conversation not found", f"conversation not found for message {self.name}")
+	
 	def send_message_on_creation(self):
 		# print("Sending Message on Creation",self)
 		# frappe.log_error("Sending Message on Creation",f"Sending Message on Creation {self}")

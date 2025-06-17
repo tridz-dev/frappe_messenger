@@ -18,7 +18,9 @@
   "section_break_jrko",
   "reference_doctype",
   "column_break_awms",
-  "reference_name"
+  "reference_name",
+  "log_tab",
+  "status_log"
  ],
  "fields": [
   {
@@ -43,10 +45,11 @@
    "label": "Last Message Time"
   },
   {
+   "default": "Open",
    "fieldname": "status",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "label": "Status",
-   "options": "Open"
+   "options": "Messenger Conversation Status"
   },
   {
    "fieldname": "conversation_id",
@@ -91,12 +94,23 @@
    "fieldname": "block_chat",
    "fieldtype": "Check",
    "label": "Block Chat"
+  },
+  {
+   "fieldname": "log_tab",
+   "fieldtype": "Tab Break",
+   "label": "Log"
+  },
+  {
+   "fieldname": "status_log",
+   "fieldtype": "Table",
+   "label": "Status Log",
+   "options": "Messenger Conversation Status Log"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-15 21:29:36.408889",
+ "modified": "2025-06-16 17:00:36.512728",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Conversation",
