@@ -19,6 +19,8 @@
   "reference_doctype",
   "column_break_awms",
   "reference_name",
+  "section_break_rrnt",
+  "tags",
   "log_tab",
   "status_log"
  ],
@@ -105,12 +107,22 @@
    "fieldtype": "Table",
    "label": "Status Log",
    "options": "Messenger Conversation Status Log"
+  },
+  {
+   "fieldname": "section_break_rrnt",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "tags",
+   "fieldtype": "Table MultiSelect",
+   "label": "Tags",
+   "options": "Messenger Conversation Tags"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-16 17:00:36.512728",
+ "modified": "2025-06-17 16:31:14.023148",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Conversation",
