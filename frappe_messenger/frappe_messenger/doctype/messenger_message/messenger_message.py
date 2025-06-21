@@ -11,7 +11,6 @@ from frappe.utils import get_site_path
 
 class MessengerMessage(Document):
 	def after_insert(self):
-		# pass
 		self.send_message_on_creation()
 		self.open_conversation()
 
@@ -27,71 +26,9 @@ class MessengerMessage(Document):
 			frappe.log_error("Conversation not found", f"conversation not found for message {self.name}")
 	
 	def send_message_on_creation(self):
-		# print("Sending Message on Creation",self)
-		# frappe.log_error("Sending Message on Creation",f"Sending Message on Creation {self}")
 		if self.message_direction != "Outgoing" or self.message_id:
 			return
 		send_message(self,self.recipient_id,self.message )
-
-# def upload_messenger_large_file(file_url, file_type, token, settings):
-# 	"""Handle large file uploads using Facebook's chunked upload API for Messenger"""
-# 	try:
-# 		# Download the file from Frappe's public directory
-# 		file_content = requests.get(file_url).content
-# 		file_size = len(file_content)
-
-# 		# Start chunked upload session
-# 		session_url = f"https://graph-video.facebook.com/{settings.version}/me/message_attachments"
-# 		start_params = {
-# 			"access_token": token,
-# 			"upload_phase": "start",
-# 			"file_length": file_size,
-# 			"file_type": "video/mp4" if file_type == "video" else "application/octet-stream"
-# 		}
-		
-# 		start_response = requests.post(session_url, params=start_params)
-# 		if start_response.status_code != 200:
-# 			frappe.throw(f"Failed to start chunked upload: {start_response.text}")
-		
-# 		upload_session_id = start_response.json().get("attachment_id")
-		
-# 		# Upload file in chunks
-# 		chunk_size = 4 * 1024 * 1024  # 4MB chunks
-# 		for i in range(0, file_size, chunk_size):
-# 			chunk = file_content[i:i + chunk_size]
-			
-# 			transfer_params = {
-# 				"access_token": token,
-# 				"upload_phase": "transfer",
-# 				"attachment_id": upload_session_id,
-# 				"offset": i
-# 			}
-			
-# 			transfer_response = requests.post(
-# 				session_url,
-# 				params=transfer_params,
-# 				files={"video": chunk}
-# 			)
-			
-# 			if transfer_response.status_code != 200:
-# 				frappe.throw(f"Failed during chunk upload: {transfer_response.text}")
-		
-# 		# Finish upload
-# 		finish_params = {
-# 			"access_token": token,
-# 			"upload_phase": "finish",
-# 			"attachment_id": upload_session_id
-# 		}
-		
-# 		finish_response = requests.post(session_url, params=finish_params)
-# 		if finish_response.status_code != 200:
-# 			frappe.throw(f"Failed to finish upload: {finish_response.text}")
-			
-# 		return finish_response.json().get("attachment_id")
-		
-# 	except Exception as e:
-# 		frappe.log_error(f"Error in chunked upload",f"Error in chunked upload: {str(e)}")
-# 		frappe.throw(f"Failed to upload large file: {str(e)}")
 
 def upload_messenger_large_file(file_url, file_type, token, settings):
 	"""Upload large file (video, etc.) as reusable attachment to Facebook Messenger"""
@@ -132,9 +69,7 @@ def upload_messenger_large_file(file_url, file_type, token, settings):
 @frappe.whitelist()
 def send_message(self,recipient_id,message):
 	platform = frappe.db.get_value("Messenger Conversation",self.conversation,"platform")
-	print("PLATFORM form send.. ", platform)
 	from_meta = frappe.db.get_value("Messenger Platform",platform,"from_meta")
-	print("from meta",from_meta)
 	if not from_meta:
 		return
 	if platform == "WhatsApp":
@@ -145,7 +80,6 @@ def send_message(self,recipient_id,message):
 	settings = frappe.get_single("Messenger Settings")
 	url = f"{settings.url}/{settings.version}/me/messages"
 	token = settings.get_password("access_token")
-	print("token", token)
 	params = {
         "access_token": token
     }
@@ -207,29 +141,18 @@ def send_message(self,recipient_id,message):
 	else:
 		frappe.throw(f"Unsupported content type: {self.content_type}")
 	response = requests.post(url, params=params, json=payload)
-	print("RESPONSE",response)
 	if response.status_code == 200:
 		res_json = response.json()
 		message_id = res_json.get("message_id")
-		print("message_id ===== >>> ",message_id)
-		# self.message_id = message_id
 		frappe.db.set_value("Messenger Message", self.name, "message_id", message_id)
 
 		if self.conversation:
 			frappe.db.set_value("Messenger Conversation", self.conversation, "last_message", message)
 			frappe.db.set_value("Messenger Conversation", self.conversation, "last_message_time", self.creation)
 
-		# Update last message in the conversation (assuming conversation exists)
-		# conversation = frappe.get_value("Messenger Conversation", {"recipient_id": recipient_id})
-		# if conversation:
-		# 	frappe.db.set_value("Messenger Conversation", conversation, "last_message", message)
-
 	else:
 		frappe.log_error("Messenger Send Message Error", response.text)
 		frappe.throw("Failed to send message")
-	# if response.status_code != 200:
-	# 	frappe.log_error("Messenger Send Message Error",response.text)
-	# 	frappe.throw("Failed to send message")
 
 @frappe.whitelist()
 def mark_messages_as_read(conversation):
@@ -252,7 +175,6 @@ def mark_messages_as_read(conversation):
 		settings = frappe.get_single("Messenger Settings")
 		url = f"{settings.url}/{settings.version}/me/messages"
 		token = settings.get_password("access_token")
-		# print("CONVERSATION .. ", conversation)
 		sender_id = frappe.db.get_value("Messenger Conversation",conversation,"sender_id")
 		params = {
 			"access_token": token

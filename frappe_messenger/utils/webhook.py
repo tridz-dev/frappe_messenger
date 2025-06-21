@@ -27,7 +27,6 @@ def process_incoming_messages():
     data = frappe.local.form_dict
     if not data:
         data = json.loads(frappe.request.data)
-    print("DATA From WEbhook ", data)
     frappe.get_doc({
 		"doctype": "Messenger Notification Log",
 		"template": "Webhook",
@@ -149,7 +148,6 @@ def handle_message_delivery_event(messaging_event):
 
     for mid in mids:
         try:
-            print("message delivery",mid)
             message_name = frappe.db.get_value("Messenger Message", {"message_id": mid},"name")
             message = frappe.get_doc("Messenger Message", message_name)
             message.status = "Delivered"
@@ -261,100 +259,6 @@ def get_cached_setting(fieldname):
     
     return cached_settings.get(fieldname)
 
-
-# @frappe.whitelist(allow_guest=True)
-# def fetch_all_messages():
-# 	settings = frappe.get_single("Messenger Settings")
-# 	print("Hii worked ",settings.url)
-	
-
-# 	if not settings.enabled:
-# 		return
-# 	url = f"{settings.url}/{settings.version}/{settings.page_id}/conversations"
-# 	token = settings.get_password("access_token")
-# 	params = {
-# 		"access_token": token,
-# 		"fields": "messages{message,from,to,created_time,id}",
-# 		"platform":"messenger"
-# 	}
-# 	response = requests.get(url, params=params)
-# 	if response.status_code != 200:
-# 		frappe.log_error(response.text, "Messenger Fetch Error")
-# 		return
-# 	data = response.json()
-# 	conversations = data.get('data', [])
-# 	for convo in conversations:
-# 		convo_id = convo['id']
-# 		messages = convo.get('messages', {}).get('data', [])
-# 		print("messages[-1][created_time]",messages[-1]["created_time"])
-# 		created_time = parser.parse(messages[0]["created_time"]).replace(tzinfo=None)
-# 		print("Created TIME = > ",created_time )
-
-# 		existing_convo = frappe.db.exists("Messenger Conversation", {"conversation_id": convo_id})
-# 		if existing_convo:
-# 			conversation_doc = frappe.get_doc("Messenger Conversation", existing_convo)
-# 			frappe.db.set_value("Messenger Conversation", existing_convo, "last_message", messages[0]["message"])
-# 		else:	
-# 			conversation_doc = frappe.get_doc({
-# 				"doctype": "Messenger Conversation",
-# 				"conversation_id":convo_id,
-# 				"platform": "Messenger",
-# 				"sender_id": messages[-1]["from"]["id"],
-# 				"last_message": messages[0]["message"],
-# 				"last_message_time": created_time,
-# 				"status": "Open"
-# 			})
-# 			conversation_doc.insert(ignore_permissions=True)
-
-# 		for message in messages:
-# 			message_id = message.get('id')
-			
-# 			if frappe.db.exists("Messenger Message", {"message_id": message_id}):
-# 				continue
-
-# 			message_text = message.get("message", "")
-# 			from_id = message.get('from', {}).get('id')
-# 			to_data = message.get('to', {}).get('data', [])
-# 			created_time =parser.parse(message.get('created_time')).replace(tzinfo=None)
-			
-# 			frappe.get_doc({
-# 				"doctype": "Messenger Message",
-# 				"message_direction":"Incoming" if from_id != settings.page_id else "Outgoing",
-# 				"conversation": conversation_doc.name,
-# 				"sender_id": from_id,
-# 				"message": message_text,
-# 				"timestamp": created_time,
-# 				"message_id": message_id
-# 			}).insert(ignore_permissions=True)
-# 			from_user = message.get('from', {})
-# 			if from_user:
-# 				create_or_update_messenger_user(
-#                     user_id=from_user.get('id'),
-#                     user_name=from_user.get('name'),
-#                     platform="Messenger"
-#                 )
-
-# //////////////////////////
-# def create_or_update_messenger_user(user_id, user_name, platform):
-#     if not user_id:
-#         return
-
-#     if frappe.db.exists("Messenger User", {"user_id": user_id, "platform": platform}):
-#         # Already exists, maybe update username if changed
-#         user_doc = frappe.get_doc("Messenger User", {"user_id": user_id, "platform": platform})
-#         if user_doc.username != user_name:
-#             user_doc.username = user_name
-#             user_doc.save(ignore_permissions=True)
-#             return user_doc.name
-#     else:
-#         # Create new
-#         user_doc=frappe.get_doc({
-#             "doctype": "Messenger User",
-#             "user_id": user_id,
-#             "username": user_name,
-#             "platform": platform
-#         }).insert(ignore_permissions=True)
-#         return user_doc.name
 
 def create_or_update_messenger_user(user_id, platform=None, user_name=None):
     if not user_id:
@@ -530,7 +434,6 @@ def fetch_all_messages():
 
 
 def send_message_on_creation(doc,method):
-	print("Sending Message on Creation",doc)
 	frappe.log_error("Sending Message on Creation",f"Sending Message on Creation {doc}")
 	if doc.message_direction != "Outgoing":
 		return
@@ -540,14 +443,10 @@ def send_message_on_creation(doc,method):
 
 @frappe.whitelist()
 def send_message(recipient_id,message):
-	# recipient_id = "9780239182022706"
-	# message = "HIIIII test"
-	print("Sending Message",f"Sending Message to {recipient_id} with message {message}")
 	frappe.log_error("Sending Message",f"Sending Message to {recipient_id} with message {message}")
 	settings = frappe.get_single("Messenger Settings")
 	url = f"{settings.url}/{settings.version}/me/messages"
 	token = settings.get_password("access_token")
-	print("token", token)
 	params = {
         "access_token": token
     }
@@ -560,7 +459,6 @@ def send_message(recipient_id,message):
         }
     }
 	response = requests.post(url, params=params, json=payload)
-	print("RESPONSE",response)
 	if response.status_code != 200:
 		frappe.log_error("Messenger Send Message Error",response.text)
 		frappe.throw("Failed to send message")
