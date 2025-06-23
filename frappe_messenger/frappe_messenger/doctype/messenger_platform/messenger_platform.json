@@ -7,7 +7,8 @@
  "engine": "InnoDB",
  "field_order": [
   "platform",
-  "from_meta"
+  "from_meta",
+  "disabled"
  ],
  "fields": [
   {
@@ -21,12 +22,18 @@
    "fieldname": "from_meta",
    "fieldtype": "Check",
    "label": "From Meta"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-05-07 18:51:45.198160",
+ "modified": "2025-06-23 11:37:30.249423",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Platform",
