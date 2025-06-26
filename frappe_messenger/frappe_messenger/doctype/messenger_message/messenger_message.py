@@ -6,7 +6,8 @@ import requests
 import json
 import os
 from frappe.model.document import Document
-from frappe.utils import get_site_path
+from frappe.utils import get_site_path,get_datetime
+
 
 
 class MessengerMessage(Document):
@@ -16,12 +17,18 @@ class MessengerMessage(Document):
 
 	def open_conversation(self):
 		if self.conversation:
-			conversation = frappe.get_doc("Messenger Conversation",self.conversation)
-			if conversation.status != "Open":
-				conversation.status = "Open"
-				conversation.save(ignore_permissions=True)
-			else:
-				return
+			if self.message_direction == "Incoming":
+				conversation = frappe.get_doc("Messenger Conversation",self.conversation)
+				if conversation.status != "Open":
+					conversation.status = "Open"
+					conversation.append("first_response", {
+						"status":"Open",
+						"incoming_message":self.name,
+						"incoming_message_time":self.timestamp
+					})
+					conversation.save(ignore_permissions=True)
+				else:
+					return
 		else:
 			frappe.log_error("Conversation not found", f"conversation not found for message {self.name}")
 	
@@ -29,6 +36,8 @@ class MessengerMessage(Document):
 		if self.message_direction != "Outgoing" or self.message_id:
 			return
 		send_message(self,self.recipient_id,self.message )
+		track_response_time(self)
+		update_first_response_log(self)
 
 def upload_messenger_large_file(file_url, file_type, token, settings):
 	"""Upload large file (video, etc.) as reusable attachment to Facebook Messenger"""
@@ -244,3 +253,126 @@ def send_whatsapp_message(self):
             message=frappe.get_traceback()
         )
 		return None
+
+def track_response_time(self):
+    if self.message_direction != "Outgoing":
+        return
+
+    last_outgoing = frappe.db.get_all(
+        "Messenger Message",
+        filters={
+            "conversation": self.conversation,
+            "message_direction": "Outgoing",
+            "creation": ["<", self.creation]
+        },
+        fields=["name", "creation"],
+        order_by="creation desc",
+        limit=1
+    )
+
+    last_outgoing_time = get_datetime(last_outgoing[0]["creation"]) if last_outgoing else None
+
+    incoming_filters = {
+        "conversation": self.conversation,
+        "message_direction": "Incoming",
+        "creation": ["<", self.creation],
+    }
+
+    if last_outgoing_time:
+        incoming_filters["creation"] = [">", last_outgoing_time, "<", self.creation]
+
+    incoming_messages = frappe.db.get_all(
+        "Messenger Message",
+        filters=incoming_filters,
+        fields=["name", "creation"],
+        order_by="creation asc"
+    )
+
+    if not incoming_messages:
+        return
+
+    incoming_msg = incoming_messages[0]
+    incoming_time = get_datetime(incoming_msg["creation"])
+    outgoing_time = get_datetime(self.creation)
+    response_time = (outgoing_time - incoming_time).total_seconds()
+
+
+    conversation = frappe.get_doc("Messenger Conversation", self.conversation)
+    conversation.append("response_times", {
+        "incoming_message": incoming_msg["name"],
+        "outgoing_message": self.name,
+        "response_time": response_time,
+        "user": frappe.session.user
+    })
+
+    total = 0
+    count = 0
+    for row in conversation.response_times:
+        total += row.response_time or 0
+        count += 1
+    if count > 0:
+        conversation.avg_response_time = round(total / count, 2)
+        
+    conversation.save(ignore_permissions=True)
+    frappe.db.commit()
+
+def update_first_response_log(self):
+	if self.message_direction != "Outgoing":
+		return
+	
+	rows = frappe.db.get_all(
+        'Messenger First Response Details',
+        filters={
+            'parent': self.conversation,
+            'status': 'Open',
+            'outgoing_message': ['=', ''],  # empty outgoing field
+        },
+        fields=['name', 'incoming_message', 'incoming_message_time', 'parent'],
+        order_by='incoming_message_time asc',
+        limit_page_length=1
+    )
+
+	if not rows:
+		return
+	
+	row = rows[0]
+	incoming_time = get_datetime(row.incoming_message_time)
+	outgoing_time = get_datetime(self.creation)
+	response_seconds = (outgoing_time - incoming_time).total_seconds()
+
+	frappe.db.set_value(
+        'Messenger First Response Details',
+        row.name,
+        {
+            'outgoing_message': self.name,
+            'outgoing_message_time': self.creation,
+            'response_time_in_seconds': response_seconds,
+			'user':frappe.session.user
+        },
+        update_modified=False
+    )
+
+	update_avg_response_time(self.conversation)
+
+
+def update_avg_response_time(convo_name):
+    rows = frappe.db.get_all(
+        'Messenger First Response Details',
+        filters={
+            'parent': convo_name,
+            'response_time_in_seconds': ['>', 0]
+        },
+        fields=['response_time_in_seconds']
+    )
+    if not rows:
+        return
+
+    total = sum(r.response_time_in_seconds for r in rows)
+    avg = round(total / len(rows), 2)
+    frappe.db.set_value(
+        'Messenger Conversation',
+        convo_name,
+        'avg_first_response_time',
+        avg
+    )
+

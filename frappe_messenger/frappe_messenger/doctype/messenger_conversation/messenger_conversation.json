@@ -22,7 +22,13 @@
   "section_break_rrnt",
   "tags",
   "log_tab",
-  "status_log"
+  "status_log",
+  "response_details_tab",
+  "response_times",
+  "avg_response_time",
+  "section_break_zjgr",
+  "first_response",
+  "avg_first_response_time"
  ],
  "fields": [
   {
@@ -117,12 +123,43 @@
    "fieldtype": "Table MultiSelect",
    "label": "Tags",
    "options": "Messenger Conversation Tags"
+  },
+  {
+   "fieldname": "response_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Response Details"
+  },
+  {
+   "fieldname": "response_times",
+   "fieldtype": "Table",
+   "label": "Response Times",
+   "options": "Messenger Message Response Details"
+  },
+  {
+   "fieldname": "section_break_zjgr",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "first_response",
+   "fieldtype": "Table",
+   "label": "First Response",
+   "options": "Messenger First Response Details"
+  },
+  {
+   "fieldname": "avg_response_time",
+   "fieldtype": "Float",
+   "label": "Average Response Time (in seconds)"
+  },
+  {
+   "fieldname": "avg_first_response_time",
+   "fieldtype": "Float",
+   "label": "Average First Response Time  (in seconds)"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-17 16:31:14.023148",
+ "modified": "2025-06-24 01:12:47.166473",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Conversation",
