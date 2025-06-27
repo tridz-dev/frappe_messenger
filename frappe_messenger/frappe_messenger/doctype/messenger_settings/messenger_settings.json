@@ -16,6 +16,10 @@
   "section_break_yqay",
   "restrict_by_assignment",
   "unrestricted_roles",
+  "column_break_bhdr",
+  "enable_auto_assign",
+  "assignable_agents",
+  "last_user",
   "section_break_fwqq",
   "auto_create_lead"
  ],
@@ -63,7 +67,8 @@
   },
   {
    "fieldname": "section_break_yqay",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Assignment"
   },
   {
    "default": "0",
@@ -88,13 +93,36 @@
    "fieldname": "auto_create_lead",
    "fieldtype": "Check",
    "label": "Auto Create Lead"
+  },
+  {
+   "fieldname": "column_break_bhdr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_auto_assign",
+   "fieldtype": "Check",
+   "label": "Enable Auto Assign"
+  },
+  {
+   "fieldname": "last_user",
+   "fieldtype": "Data",
+   "label": "last_user",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.enable_auto_assign == 1",
+   "fieldname": "assignable_agents",
+   "fieldtype": "Table MultiSelect",
+   "label": "Assignable Agents",
+   "options": "Messenger Assignable Agents"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-06-13 18:10:43.516581",
+ "modified": "2025-06-26 18:22:46.379696",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Settings",
