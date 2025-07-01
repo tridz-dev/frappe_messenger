@@ -255,7 +255,8 @@ fixtures = [
                 "name",
                 "in",
                 {
-                    "WhatsApp Message-custom_message_from_messenger"
+                    "WhatsApp Message-custom_message_from_messenger",
+                    "CRM Lead-custom_messenger_conversation"
                 },
             ]
         ],
