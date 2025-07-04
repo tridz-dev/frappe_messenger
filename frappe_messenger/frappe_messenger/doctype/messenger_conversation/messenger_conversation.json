@@ -28,7 +28,10 @@
   "avg_response_time",
   "section_break_zjgr",
   "first_response",
-  "avg_first_response_time"
+  "avg_first_response_time",
+  "helpdesk_tab",
+  "hd_tickets",
+  "latest_ticket_status"
  ],
  "fields": [
   {
@@ -154,12 +157,29 @@
    "fieldname": "avg_first_response_time",
    "fieldtype": "Float",
    "label": "Average First Response Time  (in seconds)"
+  },
+  {
+   "fieldname": "helpdesk_tab",
+   "fieldtype": "Tab Break",
+   "label": "Helpdesk"
+  },
+  {
+   "fieldname": "hd_tickets",
+   "fieldtype": "Table",
+   "label": "HD Tickets",
+   "options": "Messenger Conversation Tickets"
+  },
+  {
+   "fieldname": "latest_ticket_status",
+   "fieldtype": "Data",
+   "label": "Latest Ticket Status",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-24 01:12:47.166473",
+ "modified": "2025-07-03 18:43:31.055142",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Conversation",

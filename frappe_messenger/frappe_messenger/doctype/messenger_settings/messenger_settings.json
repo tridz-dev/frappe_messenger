@@ -21,7 +21,9 @@
   "assignable_agents",
   "last_user",
   "section_break_fwqq",
-  "auto_create_lead"
+  "auto_create_lead",
+  "helpdesk_section",
+  "enable_helpdesk_ticket_creation"
  ],
  "fields": [
   {
@@ -85,7 +87,8 @@
   },
   {
    "fieldname": "section_break_fwqq",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "CRM"
   },
   {
    "default": "0",
@@ -116,13 +119,24 @@
    "fieldtype": "Table MultiSelect",
    "label": "Assignable Agents",
    "options": "Messenger Assignable Agents"
+  },
+  {
+   "fieldname": "helpdesk_section",
+   "fieldtype": "Section Break",
+   "label": "Helpdesk"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_helpdesk_ticket_creation",
+   "fieldtype": "Check",
+   "label": "Enable Helpdesk Ticket Creation"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-06-26 18:22:46.379696",
+ "modified": "2025-07-03 11:54:08.399987",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Settings",

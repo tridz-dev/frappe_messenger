@@ -142,7 +142,11 @@ permission_query_conditions = {
 doc_events = {
 	"WhatsApp Message": {
 		"on_update": "frappe_messenger.utils.whatsapp_to_messenger.get_whatsapp_message"
-	}
+	},
+    "HD Ticket": {
+        "on_update": "frappe_messenger.utils.messenger_helpdesk_integration.update_messenger_conversation_on_ticket_change"
+    }
+
 }
 # doc_events = {
 # 	"Messenger Message ": {
@@ -256,7 +260,8 @@ fixtures = [
                 "in",
                 {
                     "WhatsApp Message-custom_message_from_messenger",
-                    "CRM Lead-custom_messenger_conversation"
+                    "CRM Lead-custom_messenger_conversation",
+                    "HD Ticket-custom_messenger_conversation"
                 },
             ]
         ],

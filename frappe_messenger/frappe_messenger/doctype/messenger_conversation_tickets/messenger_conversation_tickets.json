@@ -1,0 +1,55 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-07-03 17:56:13.019730",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "hd_ticket",
+  "subject",
+  "status",
+  "creation_time"
+ ],
+ "fields": [
+  {
+   "fieldname": "hd_ticket",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "HD Ticket",
+   "options": "HD Ticket"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Status"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Subject"
+  },
+  {
+   "fieldname": "creation_time",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Creation Time"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-07-03 18:44:44.903821",
+ "modified_by": "Administrator",
+ "module": "Frappe Messenger",
+ "name": "Messenger Conversation Tickets",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
