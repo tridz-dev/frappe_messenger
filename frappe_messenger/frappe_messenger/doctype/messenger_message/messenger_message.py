@@ -16,6 +16,8 @@ class MessengerMessage(Document):
 		self.open_conversation()
 
 	def open_conversation(self):
+		if self.content_type == 'flow':
+			return
 		if self.conversation:
 			if self.message_direction == "Incoming":
 				conversation = frappe.get_doc("Messenger Conversation",self.conversation)
@@ -236,7 +238,8 @@ def send_whatsapp_message(self):
             "to": self.recipient_id,
             "message": self.message,
             "content_type": self.content_type,
-            "custom_message_from_messenger": 1
+            "custom_message_from_messenger": 1,
+			"attach":self.attach
         })
 		whatsapp_msg.insert(ignore_permissions=True)
 

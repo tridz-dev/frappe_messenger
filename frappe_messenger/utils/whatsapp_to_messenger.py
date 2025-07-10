@@ -10,7 +10,7 @@ def get_whatsapp_message(doc, event):
             )
             return
         
-        existing_msg = frappe.db.exists("Messenger Message", {"message_id": doc.message_id})        
+        existing_msg = frappe.db.exists("Messenger Message", {"message_id": doc.message_id})    
         if existing_msg:
             update_messenger_message(existing_msg, doc)
         else:
@@ -47,22 +47,26 @@ def create_messenger_message(doc):
 
         user = get_or_create_whatsapp_user(mobile_no, doc.profile_name, "WhatsApp")
         conversation = get_or_create_conversation(mobile_no, "WhatsApp")
+        message = doc.message
 
         frappe.db.set_value("Messenger Conversation", conversation, {
-            "last_message": doc.message,
+            "last_message": message,
             "last_message_time": doc.creation
         })
 
+        content_type = "file" if doc.content_type == "document" else doc.content_type
         msg = frappe.new_doc("Messenger Message")
         msg.update({
             "message_id": doc.message_id,
-            "message": doc.message,
+            "message": message,
             "message_direction": doc.type,
-            "content_type": doc.content_type,
+            "content_type": content_type,
             "status": doc.status,
             "is_reply": doc.is_reply,
+            "is_auto_generated_outgoing_message": 1 if doc.type == "Outgoing" else 0,
             "conversation": conversation,
-            "timestamp": doc.creation
+            "timestamp": doc.creation,
+            "attach":doc.attach
         })
 
         if doc.type == "Incoming":
@@ -82,6 +86,7 @@ def update_messenger_message(message_name, doc):
     try:
         msg = frappe.get_doc("Messenger Message", message_name)
         msg.status = doc.status
+        msg.attach = doc.attach
         msg.save(ignore_permissions=True)
 
     except Exception as e:

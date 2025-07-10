@@ -19,6 +19,7 @@
   "content_type",
   "attach",
   "status",
+  "is_auto_generated_outgoing_message",
   "section_break_gawl",
   "is_reply",
   "reply_to_message_id",
@@ -140,7 +141,7 @@
    "fieldname": "content_type",
    "fieldtype": "Select",
    "label": "Content Type",
-   "options": "text\nfile\nimage\nvideo\naudio\nreaction"
+   "options": "text\nfile\nimage\nvideo\naudio\nreaction\nflow\nlocation\ncontact\nbutton"
   },
   {
    "depends_on": "eval:(doc.content_type =='audio' || doc.content_type =='video' || doc.content_type =='document' || doc.content_type =='image')",
@@ -152,12 +153,19 @@
    "fieldname": "status",
    "fieldtype": "Data",
    "label": "Status"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_auto_generated_outgoing_message",
+   "fieldtype": "Check",
+   "label": "Is Auto Generated Outgoing Message",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-05-06 12:41:39.375667",
+ "modified": "2025-07-10 01:03:52.825065",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Message",
