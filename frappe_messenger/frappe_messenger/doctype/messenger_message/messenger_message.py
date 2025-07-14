@@ -179,6 +179,22 @@ def mark_messages_as_read(conversation):
 		AND `message_direction` = 'Incoming'
 		AND `is_read` = 0
 	""", (conversation))
+	unread_count = frappe.db.count('Messenger Message', 
+		filters={
+			'conversation': conversation,
+			'message_direction': 'Incoming',
+			'is_read': 0
+		}
+	)
+	
+	if "frappe_crm" in frappe.get_installed_apps():
+		frappe.publish_realtime(
+            "messenger:unread_update",
+            {
+                "conversation_id": conversation,
+                "unread_count": unread_count
+            }
+        )
 	
 	frappe.db.commit()
 	platform = frappe.db.get_value("Messenger Conversation",conversation,"platform")
@@ -199,13 +215,7 @@ def mark_messages_as_read(conversation):
 		response = requests.post(url, params=params, json=payload)
 	
 	# Return updated unread count for the conversation
-	return frappe.db.count('Messenger Message', 
-		filters={
-			'conversation': conversation,
-			'message_direction': 'Incoming',
-			'is_read': 0
-		}
-	)
+	return unread_count
 
 def get_permission_query_conditions(user):
 	if not user or user == "Administrator":
