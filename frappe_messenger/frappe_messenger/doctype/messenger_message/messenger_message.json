@@ -141,7 +141,7 @@
    "fieldname": "content_type",
    "fieldtype": "Select",
    "label": "Content Type",
-   "options": "text\nfile\nimage\nvideo\naudio\nreaction\nflow\nlocation\ncontact\nbutton"
+   "options": "text\nfile\nimage\nvideo\naudio\nreaction\nflow\nlocation\ncontact\nbutton\ndocument"
   },
   {
    "depends_on": "eval:(doc.content_type =='audio' || doc.content_type =='video' || doc.content_type =='document' || doc.content_type =='image')",
@@ -165,7 +165,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-10 01:03:52.825065",
+ "modified": "2025-07-12 21:18:13.275677",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Message",
