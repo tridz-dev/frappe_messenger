@@ -186,8 +186,7 @@ def mark_messages_as_read(conversation):
 			'is_read': 0
 		}
 	)
-	
-	if "frappe_crm" in frappe.get_installed_apps():
+	if "crm" in frappe.get_installed_apps():
 		frappe.publish_realtime(
             "messenger:unread_update",
             {
