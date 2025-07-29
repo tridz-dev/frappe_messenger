@@ -265,6 +265,45 @@ fixtures = [
                 },
             ]
         ],
+    },
+    {
+        "doctype":"Role",
+        "filters":[
+            [
+                "name",
+                "in",
+                [
+                    "Messenger Manager",
+                    "Messenger User"
+                ]
+            ]
+        ]
+    },
+    {
+        "doctype":"Custom DocPerm",
+        "filters":[
+            [
+                "name",
+                "in",
+                [
+                    "42s631dh9j",
+                    "4q0caiafpm",
+                    "52o2hli5bf",
+                    "5cvg53pke6",
+                    "6gartcfpmq",
+                    "6mpmsvrlci",
+                    "6vlnv3qv8r",
+                    "745kv6s9o4",
+                    "7gtdokd9u9",
+                    "7l7qkftll7",
+                    "7rim63alqj",
+                    "80qp095dr9",
+                    "85ckqqu2dn",
+                    "8bqhjopv88",
+                    "8g9kbrv20i"
+                ]
+            ]
+        ]
     }
 ]
 
