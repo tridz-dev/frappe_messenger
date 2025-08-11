@@ -7,13 +7,16 @@ import json
 import os
 from frappe.model.document import Document
 from frappe.utils import get_site_path,get_datetime
+from frappe_messenger.utils.notification_utils import create_crm_notification_generic
 
 
 
 class MessengerMessage(Document):
 	def after_insert(self):
+		frappe.log_error("After Insert send_crm_notification")
 		self.send_message_on_creation()
 		self.open_conversation()
+		self.send_crm_notification()
 
 	def open_conversation(self):
 		if self.content_type == 'flow':
@@ -40,6 +43,49 @@ class MessengerMessage(Document):
 		send_message(self,self.recipient_id,self.message )
 		track_response_time(self)
 		update_first_response_log(self)
+	
+	def send_crm_notification(self):
+		frappe.log_error("send_crm_notification Called")
+		try:
+			settings = get_messenger_settings()
+			if not settings.send_crm_notification:
+				return
+			if self.message_direction != "Incoming":
+				return
+
+			conversation = frappe.get_doc("Messenger Conversation", self.conversation)
+			platform_from_meta = frappe.db.get_value(
+				"Messenger Platform",
+				conversation.platform,  # assuming `self.platform` holds the platform name
+				"from_meta"
+			)
+			notification_type = conversation.platform if platform_from_meta else "Custom"
+			assigned_to_list = frappe.get_all(
+				"ToDo",
+				filters={
+					"reference_type": "Messenger Conversation",
+					"reference_name": self.conversation,
+					"status": "Open"
+				},
+				fields=["allocated_to"]
+			)
+			assigned_users = [d.allocated_to for d in assigned_to_list]
+			for user in assigned_users:
+				create_crm_notification_generic(
+					notification_type=notification_type,
+					notification_text=f"<b>New {conversation.platform} message from {conversation.sender_name}</b>",
+					recipient=user,
+					reference_doctype=conversation.doctype,
+					reference_name=conversation.name,
+					notification_type_doctype=self.doctype,
+					notification_type_doc=self.name,
+					message=self.message
+				)
+		except Exception as e:
+			frappe.log_error("Error in send_crm_notification",frappe.get_traceback())
+
+def get_messenger_settings():
+	return frappe.get_cached_doc("Messenger Settings")
 
 def upload_messenger_large_file(file_url, file_type, token, settings):
 	"""Upload large file (video, etc.) as reusable attachment to Facebook Messenger"""

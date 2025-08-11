@@ -22,6 +22,8 @@
   "last_user",
   "section_break_fwqq",
   "auto_create_lead",
+  "column_break_xoou",
+  "send_crm_notification",
   "helpdesk_section",
   "enable_helpdesk_ticket_creation"
  ],
@@ -130,13 +132,23 @@
    "fieldname": "enable_helpdesk_ticket_creation",
    "fieldtype": "Check",
    "label": "Enable Helpdesk Ticket Creation"
+  },
+  {
+   "fieldname": "column_break_xoou",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "send_crm_notification",
+   "fieldtype": "Check",
+   "label": "Send via CRM Notification"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-07-03 11:54:08.399987",
+ "modified": "2025-08-09 22:08:15.590483",
  "modified_by": "Administrator",
  "module": "Frappe Messenger",
  "name": "Messenger Settings",
